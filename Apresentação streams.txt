@@ -1,0 +1,100 @@
+{
+  "_id": {
+    "$oid": "64caab1230bc33715dd5c9a6"
+  },
+  "nome": "Via Varejo",
+  "linguagens": "java, c sharp, node, phyton",
+  "ident_emp": 1
+}
+
+CREATE STREAM geek_stream_empresas (
+    payload VARCHAR
+) WITH (
+    KAFKA_TOPIC='geek.streams.empresas',
+    VALUE_FORMAT='JSON'
+);
+
+CREATE STREAM geek_stream_empresas_extracted AS
+SELECT
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$._id') AS id,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.nome') AS name,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.linguagens') AS linguagens,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.ident_emp') AS ident_emp
+FROM geek_stream_empresas
+EMIT CHANGES;
+
+
+----------------//-------------------------------//----------------------
+
+{
+  "_id": {
+    "$oid": "64cac711ca68603321cb004e"
+  },
+  "nome": "Pestana",
+  "linguagens": "java, javascript",
+  "ident": 2,
+  "ident_emp": 1
+}
+
+
+CREATE STREAM geek_stream_programadores (
+    payload VARCHAR
+) WITH (
+    KAFKA_TOPIC='geek.streams.programadores',
+    VALUE_FORMAT='JSON'
+);
+
+CREATE STREAM geek_stream_programadores_extracted AS
+SELECT
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$._id') AS id,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.nome') AS name,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.linguagens') AS linguagens,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.ident') AS ident_prg,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.ident_emp') AS ident_prg_emp
+FROM geek_stream_programadores
+EMIT CHANGES; 
+
+
+----------------//-------------------------------//----------------------
+
+{
+  "_id": {
+    "$oid": "64d100b55dac4303e86dede1"
+  },
+  "nome": "Golang",
+  "felicidade": 5,
+  "descricao": "Linguagem de programação criada pela GO ogle",
+  "ident": 2
+}
+
+CREATE STREAM geek_stream_linguagens (
+    payload VARCHAR
+) WITH (
+    KAFKA_TOPIC='geek.streams.linguagens',
+    VALUE_FORMAT='JSON'
+);
+
+CREATE STREAM geek_stream_linguagens_extracted AS
+SELECT
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$._id') AS id,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.nome') AS name,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.felicidade') AS happiness_level,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.descricao') AS description,
+    EXTRACTJSONFIELD(EXTRACTJSONFIELD(payload, '$.after'), '$.ident') AS ident_lng
+FROM geek_stream_linguagens
+EMIT CHANGES; 
+
+
+----------------//-------------------------------//----------------------
+
+
+CREATE STREAM programadores_empresa_javeiros AS
+SELECT 
+    programadores.name AS programador_name,
+    linguagens.name AS linguagem_name,
+    empresas.name AS empresa_name
+FROM geek_stream_linguagens_extracted linguagens
+JOIN geek_stream_programadores_extracted programadores WITHIN 10 DAYS ON programadores.ident_prg = linguagens.ident_lng
+JOIN geek_stream_empresas_extracted empresas WITHIN 10 DAYS ON empresas.ident_emp = programadores.ident_prg_emp
+WHERE empresas.linguagens LIKE '%java%'
+emit changes;

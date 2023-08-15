@@ -1,0 +1,16 @@
+{
+    "connector.class": "io.debezium.connector.mongodb.MongoDbConnector",
+    "errors.log.enable": "false",
+    "errors.log.include.messages": "false",
+    "header.converter": "org.apache.kafka.connect.storage.SimpleHeaderConverter",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "mongodb.connection.string": "mongodb+srv://pedroivogiupix:060891cma@strems-presentation.rbbwu1w.mongodb.net",
+    "mongodb.members.auto.discover": "false",
+    "mongodb.ssl.enabled": "false",
+    "mongodb.ssl.invalid.hostname.allowed": "false",
+    "name": "mongodb-source",
+    "provide.transaction.metadata": "false",
+    "tombstones.on.delete": "false",
+    "topic.prefix": "geek",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter"
+}
